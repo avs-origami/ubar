@@ -4,7 +4,7 @@
 
 A micro-sized statusbar for linux.
 
-- Incredibly minimal (only 80 lines with comments)
+- Incredibly minimal (only 83 lines with comments)
 - Depends only on xlib
 - Configured entirely in code
 

@@ -57,6 +57,9 @@ int main() {
     
 	// Main event loop
     for(;;) {
+		// Update the bar
+		system(bar_script);
+
         char* text_string;
 		string line;
 
@@ -68,7 +71,7 @@ int main() {
 			myfile.close();
 			text_string = const_cast<char*>(line.c_str());
 		} else {
-			text_string = "ubar v1.0.0";
+			text_string = "ubar v1.1.0";
 		}
         
 		// Draw the info to the bar
