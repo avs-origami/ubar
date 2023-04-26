@@ -1,0 +1,18 @@
+|-----------------------------|
+| UBAR: micro-sized statusbar |
+|-----------------------------|
+
+A micro-sized statusbar for linux.
+
+- Incredibly minimal (only 80 lines with comments)
+- Depends only on xlib
+- Configured entirely in code
+
+=== BUILDING
+============
+
+1. Edit `config.h`
+2. Run `make`
+3. Move `ubar` to your bin directory
+
+Report bugs and improvements on the issues tab.
