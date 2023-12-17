@@ -15,7 +15,7 @@ int main() {
     Display *dpy = XOpenDisplay(NIL);
     assert(dpy);
     
-	// Get the foreground and background colors
+    // Get the foreground and background colors
     XColor fg_color;
     XParseColor(dpy, DefaultColormap(dpy, 0), fg_col, &fg_color);
     XAllocColor(dpy, DefaultColormap(dpy, 0), &fg_color);
@@ -24,24 +24,29 @@ int main() {
     XParseColor(dpy, DefaultColormap(dpy, 0), bg_col, &bg_color);
     XAllocColor(dpy, DefaultColormap(dpy, 0), &bg_color);
 
-	// Set window attributes
+    XColor bord_color;
+    XParseColor(dpy, DefaultColormap(dpy, 0), border_col, &bord_color);
+    XAllocColor(dpy, DefaultColormap(dpy, 0), &bord_color);
+
+    // Set window attributes
     XSetWindowAttributes attributes;
     attributes.override_redirect = True;
     attributes.background_pixel = bg_color.pixel;
+    attributes.border_pixel = bord_color.pixel;
     
-	// Create the window
-    Window w = XCreateWindow(dpy, XDefaultRootWindow(dpy), x_pos, y_pos, width, height, 0, CopyFromParent, InputOutput, CopyFromParent, CWBackPixel | CWOverrideRedirect, &attributes);
+    // Create the window
+    Window w = XCreateWindow(dpy, XDefaultRootWindow(dpy), x_pos, y_pos, width, height, border_size, CopyFromParent, InputOutput, CopyFromParent, CWBackPixel | CWOverrideRedirect | CWBorderPixel, &attributes);
     XSelectInput(dpy, w, StructureNotifyMask);
     XMapWindow(dpy, w);
     
-	// Create a graphics context and set the font and text color
+    // Create a graphics context and set the font and text color
     GC gc = XCreateGC(dpy, w, 0, NIL);
     XSetForeground(dpy, gc, fg_color.pixel);
     XFontStruct* font_info = XLoadQueryFont(dpy, font_name);
     
     if (!font_info) {
-		fprintf(stderr, "XLoadQueryFont: failed loading font '%s'\n", font_name);
-		exit(-1);
+        fprintf(stderr, "XLoadQueryFont: failed loading font '%s'\n", font_name);
+        exit(-1);
     }
     
     XSetFont(dpy, gc, font_info->fid);
@@ -77,7 +82,7 @@ int main() {
 		// Draw the info to the bar
 		XDrawString(dpy, w, gc, 3, 11, text_string, strlen(text_string));
         XFlush(dpy);
-		sleep(1);
+		sleep(0.25);
 		XClearWindow(dpy, w);
     }
 }
