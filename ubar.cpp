@@ -3,9 +3,11 @@
 #include <iostream>
 #include <fstream>
 #include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
 #include <assert.h>
 #include <unistd.h>
 #include "config.h"
+
 using namespace std;
 
 #define NIL (0)
@@ -15,11 +17,7 @@ int main() {
     Display *dpy = XOpenDisplay(NIL);
     assert(dpy);
     
-    // Get the foreground and background colors
-    XColor fg_color;
-    XParseColor(dpy, DefaultColormap(dpy, 0), fg_col, &fg_color);
-    XAllocColor(dpy, DefaultColormap(dpy, 0), &fg_color);
-    
+    // Get the background and border colors
     XColor bg_color;
     XParseColor(dpy, DefaultColormap(dpy, 0), bg_col, &bg_color);
     XAllocColor(dpy, DefaultColormap(dpy, 0), &bg_color);
@@ -39,20 +37,25 @@ int main() {
     XSelectInput(dpy, w, StructureNotifyMask);
     XMapWindow(dpy, w);
     
-    // Create a graphics context and set the font and text color
-    GC gc = XCreateGC(dpy, w, 0, NIL);
-    XSetForeground(dpy, gc, fg_color.pixel);
-    XFontStruct* font_info = XLoadQueryFont(dpy, font_name);
-    
-    if (!font_info) {
-        fprintf(stderr, "XLoadQueryFont: failed loading font '%s'\n", font_name);
-        exit(-1);
+    // Set the font and text color
+    XftColor fg_color;
+    Visual *visual = DefaultVisual(dpy, 0);
+    Colormap cmap = DefaultColormap(dpy, 0);
+    XftFont *font = XftFontOpenName(dpy, 0, font_name);
+    if (!font) {
+        cerr << "Xft: failed to load font " << font_name << endl;
+        exit(1);
     }
-    
-    XSetFont(dpy, gc, font_info->fid);
+
+    if (!XftColorAllocName(dpy, visual, cmap, fg_col, &fg_color)) {
+        cerr << "Xft: Failed to allocate color " << fg_col << endl;
+        exit(1);
+    }
+
+    XftDraw *draw = XftDrawCreate(dpy, w, visual, cmap);
     
 	// Wait for the window to be mapped
-    for(;;) {
+    for (;;) {
 		XEvent e;
 		XNextEvent(dpy, &e);
 		if (e.type == MapNotify) {
@@ -61,7 +64,7 @@ int main() {
     }
     
 	// Main event loop
-    for(;;) {
+    for (;;) {
 		// Update the bar
 		system(bar_script);
 
@@ -80,7 +83,7 @@ int main() {
 		}
         
 		// Draw the info to the bar
-		XDrawString(dpy, w, gc, 3, 11, text_string, strlen(text_string));
+		XftDrawStringUtf8(draw, &fg_color, font, 3, 11, (const FcChar8 *)text_string, strlen(text_string));
         XFlush(dpy);
 		sleep(0.25);
 		XClearWindow(dpy, w);

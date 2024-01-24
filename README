@@ -4,8 +4,8 @@
 
 A micro-sized statusbar for linux.
 
-- Incredibly minimal (only 83 lines with comments)
-- Depends only on xlib
+- Incredibly minimal (only 91 lines with comments)
+- Depends only on xlib and libXft
 - Configured entirely in code
 
 === BUILDING
