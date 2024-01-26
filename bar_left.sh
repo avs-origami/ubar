@@ -20,4 +20,4 @@ workspaces() {
 	echo $desky | sed 's/ /  /g' | sed "s/$desk/$desk_sel/g" | sed 's/]  /] /g' | sed 's/  \[/ \[/g' | sed 's/1 / 1 /g' | sed 's/ 9/ 9 /g'
 }
 
-echo " $(workspaces) |  $(datetime)  |  :D" > ~/.config/ubar/info.txt
+echo -n "BAT $(battery) | $(datetime)"

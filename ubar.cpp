@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
 #include <assert.h>
@@ -11,6 +12,7 @@
 using namespace std;
 
 #define NIL (0)
+string exec_output(const char* cmd, const char* dummy);
 
 int main() {
     // Open the display
@@ -66,26 +68,36 @@ int main() {
 	// Main event loop
     for (;;) {
 		// Update the bar
-		system(bar_script);
+		string bar_left = exec_output(bar_script_left, "ubar v1.4.0");
+        string bar_right = exec_output(bar_script_right, "avs-origami.github.io");
+        char* text_left = const_cast<char*>(bar_left.c_str());
+        char* text_right = const_cast<char*>(bar_right.c_str());
 
-        char* text_string;
-		string line;
+        // Get the size of the right-side info in pixels
+        XGlyphInfo info;
+        XftTextExtentsUtf8(dpy, font, (FcChar8*)text_right, strlen(text_right), &info);
+        int right_xpos = width - info.xOff - 3;
 
-		ifstream myfile (info_file);
-	
-		// Load the bar text from the specified file
-		if (myfile.is_open()) {
-			getline (myfile, line);
-			myfile.close();
-			text_string = const_cast<char*>(line.c_str());
-		} else {
-			text_string = "ubar v1.1.0";
-		}
-        
 		// Draw the info to the bar
-		XftDrawStringUtf8(draw, &fg_color, font, 3, 11, (const FcChar8 *)text_string, strlen(text_string));
+		XftDrawStringUtf8(draw, &fg_color, font, 3, 11, (const FcChar8 *)text_left, strlen(text_left));
+        XftDrawStringUtf8(draw, &fg_color, font, right_xpos, 11, (const FcChar8 *)text_right, strlen(text_right));
         XFlush(dpy);
 		sleep(0.25);
 		XClearWindow(dpy, w);
     }
+}
+
+string exec_output(const char* cmd, const char* dummy) {
+    shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) return dummy;
+    
+    char buffer[128];
+    string result = "";
+    
+    while (!feof(pipe.get())) {
+        if (fgets(buffer, 128, pipe.get()) != NULL)
+            result += buffer;
+    }
+    
+    return result;
 }
